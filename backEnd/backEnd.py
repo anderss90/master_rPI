@@ -13,13 +13,17 @@ import downstream
 from controller import fControl
 from position import position
 from uartHandler import uartHandler
-serialPort = "/dev/ttyUSB1"
+serialPort = "/dev/ttyUSB0"
+serialPort2 = "/dev/ttyUSB1"
+serialPort3 = "/dev/ttyUSB2"
 baudRate = 115200
 
 debugprinting = False 
 loopInterval = 0.08 # 10 Hz = 100ms (Adjusted down to keep up with arduino)
 enableLogging = True
-
+nSeconds = 10
+nLoops = nSeconds * 10
+ 
 class backEndThread(threading.Thread):
         def __init__(self,threadID):
                 print "backEndThread init"
@@ -35,7 +39,7 @@ class backEndThread(threading.Thread):
                         timeString = time.strftime("%d.%m-%H.%M")
                         pathString = "/home/pi/master/logs/"+timeString+"/"
                         debugname = "logTesting"
-                        debugPath = "/home/pi/master/logs/debug/"+debugname+"/"
+                        debugPath = "/home/pi/master/logs/"+debugname+"/"
                         pathString = debugPath
                         self.ssLogs = {}
                         if not os.path.exists(pathString):
@@ -54,6 +58,9 @@ class backEndThread(threading.Thread):
                         self.fcLog = open(pathString+"fcLog.dat",'w')
                         self.fcLog.write("#Time(ms)\t Roll \t Pitch \t Yaw \t xPos \t yPos \t zPos \t xVal \t yVal \t zVal \t State \t oRoll \t oPitch \t oYaw \t oThrottle \t spX \t spY \t spZ \n")
 
+                        #IMU logging
+                        self.imuLog = open(pathString+"imuLog.dat",'w')
+                        self.imuLog.write("#Time(ms)\t Roll \t Pitch \t Yaw \t gX \t Gy \t gZ \n")
 
 
 
@@ -62,8 +69,15 @@ class backEndThread(threading.Thread):
                         self.uart = uartHandler(serialPort,baudRate)
                 except SerialException:
                         print "Error opening serial port " + serialPort 
-                        self.error["uart"]="fail"
-
+                        try:
+                                self.uart = uartHandler(serialPort2,baudRate)
+                        except SerialException:
+                                print "Error opening serial port " + serialPort2
+                                try:
+                                        self.uart = uartHandler(serialPort3,baudRate)
+                                except SerialException:
+                                        print "Error opening serial port " + serialPort3
+                                        self.error["uart"]="fail"
 
         def run(self):
                 counter = 0
@@ -73,7 +87,7 @@ class backEndThread(threading.Thread):
                         if value != "ok":
                                 print "Shutting down backEnd because of %s error"%key
                                 return
-                nextExecTime = 0
+                nextExecTime = time.time()+loopInterval
                 while True: 
                         #sleep until next
                         if time.time() < nextExecTime:
@@ -117,13 +131,14 @@ class backEndThread(threading.Thread):
                         
                         #debug print
                         counter+=1
-                        if counter <= 10 :
+                        if True:
                                 self.debugPrint()
                                 #counter = 0
                         #logs
                         if counter > 1:
                                 self.logger(counter*100)
-                        if counter > 10:
+                        #Exit loop
+                        if counter > nLoops:
                                 self.closeDown()
                                 break
 
@@ -131,6 +146,7 @@ class backEndThread(threading.Thread):
                 for key,log in self.ssLogs.iteritems():
                         log.close()
                 self.fcLog.close()
+                self.imuLog.close()
 
         def logger(self,timeMs):
                 #log sonar values
@@ -153,7 +169,8 @@ class backEndThread(threading.Thread):
                 pos = self.pos
                 self.fcLog.write("%i\t %.2f\t %.2f\t %.2f\t %.2f\t %.2f\t %.2f\t %i\t %i\t %i\t %s\t %i\t %i\t %i\t %i\t %.2f\t %.2f\t %.2f\n"%(timeMs,imu.roll,imu.pitch,imu.yaw,pos.x,pos.y,pos.z,pos.xValid,pos.yValid,pos.zValid,fc.state,fc.output["roll"],fc.output["pitch"],fc.output["yaw"],fc.output["throttle"],fc.setPoints["x"],fc.setPoints["y"],fc.setPoints["z"]))
 
-
+                #imulogging
+                self.imuLog.write("%i\t %.2f\t %.2f\t %.2f\t %.2f\t %.2f\t %.2f\n"%(timeMs,imu.roll,imu.pitch,imu.yaw,imu.gx,imu.gy,imu.gz))
 
         def debugPrint(self):
                 sys.stderr.write("\x1b[2J\x1b[H")

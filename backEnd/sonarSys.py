@@ -2,7 +2,7 @@ import math
 #from imu import imu
 from sonar import sonar
 from position import position
-maxPairDiff = 2
+maxPairDiff = 5
 
 class sonarPair:
         def __init__(self,sonarA,sonarB,axis):
@@ -11,19 +11,25 @@ class sonarPair:
                 self.axis = axis
                 self.pos = 0
                 self.validity = False
-                self.invalidReason = "none"
+                self.invalidReason = -3
         
         def evaluate(self):
-                aPos = -1*self.a.avgValue-self.a.offset
-                bPos = self.b.avgValue-self.b.offset
+                aPos = -1*self.a.value-self.a.offset
+                bPos = self.b.value-self.b.offset
+
+                totalSd = self.a.sd + self.b.sd
+                if totalSd == 0: totalSd = 1
+                aCoeff = self.b.sd/totalSd
+                bCoeff = self.a.sd/totalSd
 
                 if self.a.validity or self.b.validity:
-                        self.invalidReason = "none"
+                        self.invalidReason = -3
                         self.validity = True
                         if self.a.validity and self.b.validity:
                                 difference = math.fabs(aPos-bPos)
                                 if difference  < maxPairDiff:
-                                        self.pos = (aPos+bPos)/2
+                                        self.pos = aCoeff*aPos+bCoeff*bPos
+
                                 else:
                                         self.validity = False
                                         self.invalidReason = "%.2f"%difference
@@ -34,7 +40,7 @@ class sonarPair:
                                         self.pos = bPos
                 else:
                         self.validity = False
-                        self.invalidReason = "novalid"
+                        self.invalidReason = -2
                 
 class sonarSys:
         def __init__(self):

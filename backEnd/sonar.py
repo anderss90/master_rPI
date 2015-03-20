@@ -1,13 +1,13 @@
 import position, math
-avgAlpha = 0.3
+avgAlpha = 0.6
+sdAlpha = 0.6
 maxDeviation =  3
 maxValueCm = 450
 minValueCm = 0
-maxAttitudeDeg = 10
-maxAngleVelocityDeg = 10
-maxPairDiff = 5
+maxAttitudeDeg = 15
+maxAngleVelocityDeg = 500
 outlierLimit = 20
-maxOutlierNumber = 5
+maxOutlierNumber = 3
 
 front = "front"
 back = "back"
@@ -24,13 +24,16 @@ class sonar:
                 self.validity=False
                 self.offset=0
                 self.nOutliers = 0
-                self.invalidReason = ""
+                self.invalidReason = 0
+                self.sd = 0
+
         def update(self,value):
                 self.prevValue = self.value
                 if value < 0:
                         self.value = -1
                         return
-                if math.fabs(value-self.value) > outlierLimit: #is outlier
+                diff = math.fabs(value-self.value)
+                if  diff > outlierLimit: #is outlier
                         if  self.nOutliers < maxOutlierNumber:
                                 # ignore, keep last value
                                 self.nOutliers += 1
@@ -40,6 +43,8 @@ class sonar:
                         self.nOutliers = 0
                 self.value=value
                 self.avgValue = self.avgValue + avgAlpha*(value-self.avgValue)
+                #update standard deviation
+                self.sd = self.sd + sdAlpha*(diff-self.sd)
 
         def resetOffset(self,pos):
                 if self.dir == front:
@@ -59,27 +64,27 @@ class sonar:
 
         def evaluate(self,imu,pos):
                 tempValidity = True
-                self.invalidReason = "none"
+                self.invalidReason = -3
+                diff = math.fabs(self.value-self.avgValue)
                 #check if withing accepted values
                 if self.value < minValueCm or self.value > maxValueCm:
                         tempValidity = False
-                        self.invalidReason = "range"
+                        self.invalidReason = 0
                  
                 #check if close enough to avg
-                diff = math.fabs(self.value-self.avgValue)
-                if  diff > maxDeviation:
+                elif  diff > maxDeviation:
                         tempValidity = False
                         self.invalidReason = "%.2f"%diff
                 
                 #check if attitude is within maximum
-                if math.fabs(imu.roll) > maxAttitudeDeg or math.fabs(imu.pitch) > maxAttitudeDeg:
+                elif math.fabs(imu.roll) > maxAttitudeDeg or math.fabs(imu.pitch) > maxAttitudeDeg:
                         tempValidity = False
-                        self.invalidReason = "attitude"
+                        self.invalidReason = -1
 
                 #check angle velocities
-                if math.fabs(imu.gx)+math.fabs(imu.gy)+math.fabs(imu.gz) > 3*maxAngleVelocityDeg:
+                elif math.fabs(imu.gx)+math.fabs(imu.gy)+math.fabs(imu.gz) > 3*maxAngleVelocityDeg:
                         tempValidity = False
-                        self.invalidReason = "anglevel"
+                        self.invalidReason = -2
                 
                 #detect transition from invalid to valid
                 if self.validity == False:

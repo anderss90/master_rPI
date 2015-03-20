@@ -9,10 +9,13 @@ minOutput = 1000
 pidDefKp = 1
 pidDefKi = 0
 pidDefKd = 0
+
 pidZKd = 1
+
 pidMaxOut = 500
 pidMinOut = -500
 pidDt = 0.1
+
 throttleIncrement = 10
 class fControl:
         def __init__(self):
