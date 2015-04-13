@@ -2,7 +2,8 @@ import math
 #from imu import imu
 from sonar import sonar
 from position import position
-maxPairDiff = 5
+maxPairDiff = 2000000000
+enableLowpass = True
 
 class sonarPair:
         def __init__(self,sonarA,sonarB,axis):
@@ -14,11 +15,18 @@ class sonarPair:
                 self.invalidReason = -3
         
         def evaluate(self):
-                aPos = -1*self.a.value-self.a.offset
-                bPos = self.b.value-self.b.offset
+                if enableLowpass:
+                        aPos = -1*self.a.lowpassed-self.a.offset
+                        bPos = self.b.lowpassed-self.b.offset
+
+
+                else:
+                        aPos = -1*self.a.value-self.a.offset
+                        bPos = self.b.value-self.b.offset
 
                 totalSd = self.a.sd + self.b.sd
                 if totalSd == 0: totalSd = 1
+                # a high bSD gives high aCoeff and vice versa
                 aCoeff = self.b.sd/totalSd
                 bCoeff = self.a.sd/totalSd
 

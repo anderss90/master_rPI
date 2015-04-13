@@ -1,13 +1,19 @@
 import position, math
-avgAlpha = 0.6
-sdAlpha = 0.6
+avgAlpha = 0.5
+sdAlpha = 0.1
+lowpassAlpha = 0.7
 maxDeviation =  3
 maxValueCm = 450
 minValueCm = 0
 maxAttitudeDeg = 15
 maxAngleVelocityDeg = 500
 outlierLimit = 20
-maxOutlierNumber = 3
+maxOutlierNumber = 1
+enableAttitudeFilter = False
+enableLowpass = True 
+
+deviationAlpha = 0.3
+deviationConstant = 0
 
 front = "front"
 back = "back"
@@ -15,6 +21,7 @@ right = "right"
 left = "left"
 down = "down"
 up = "up"
+
 class sonar:
         def __init__(self,direction):
                 self.dir=direction
@@ -26,8 +33,11 @@ class sonar:
                 self.nOutliers = 0
                 self.invalidReason = 0
                 self.sd = 0
+                self.lowpassed = 0
 
         def update(self,value):
+                #dynamic outlierlimit
+                outlierLimit = self.avgValue*0.4
                 self.prevValue = self.value
                 if value < 0:
                         self.value = -1
@@ -43,22 +53,29 @@ class sonar:
                         self.nOutliers = 0
                 self.value=value
                 self.avgValue = self.avgValue + avgAlpha*(value-self.avgValue)
+                self.lowpassed = self.lowpassed + lowpassAlpha*(value-self.lowpassed)
                 #update standard deviation
                 self.sd = self.sd + sdAlpha*(diff-self.sd)
 
         def resetOffset(self,pos):
+                if enableLowpass:
+                        currentValue = self.lowpassed
+                else:
+                        currentValue = self.value
+
+
                 if self.dir == front:
-                        self.offset = -1*(self.value)-pos.x
+                        self.offset = -1*(currentValue)-pos.x
                 elif self.dir == back:
-                        self.offset = self.value-pos.x
+                        self.offset = currentValue-pos.x
                 elif self.dir == right:
-                        self.offset = -1*self.value-pos.y
+                        self.offset = -1*currentValue-pos.y
                 elif self.dir == left:
-                        self.offset = self.value-pos.z
+                        self.offset = currentValue-pos.z
                 elif self.dir == down:
-                        self.offset = -1*self.value-pos.z
+                        self.offset = -1*currentValue-pos.z
                 elif self.dir == up:
-                        self.offset = self.value-pos.z
+                        self.offset = currentValue-pos.z
                 else:
                         print "ERROR: No valid sonar direction value"
 
@@ -66,6 +83,8 @@ class sonar:
                 tempValidity = True
                 self.invalidReason = -3
                 diff = math.fabs(self.value-self.avgValue)
+                #update maxDeviation based on avgValue
+                maxDeviation = self.lowpassed*deviationAlpha + deviationConstant
                 #check if withing accepted values
                 if self.value < minValueCm or self.value > maxValueCm:
                         tempValidity = False
@@ -77,12 +96,12 @@ class sonar:
                         self.invalidReason = "%.2f"%diff
                 
                 #check if attitude is within maximum
-                elif math.fabs(imu.roll) > maxAttitudeDeg or math.fabs(imu.pitch) > maxAttitudeDeg:
+                elif enableAttitudeFilter and (math.fabs(imu.roll) > maxAttitudeDeg or math.fabs(imu.pitch) > maxAttitudeDeg):
                         tempValidity = False
                         self.invalidReason = -1
 
                 #check angle velocities
-                elif math.fabs(imu.gx)+math.fabs(imu.gy)+math.fabs(imu.gz) > 3*maxAngleVelocityDeg:
+                elif enableAttitudeFilter and gmath.fabs(imu.gx)+math.fabs(imu.gy)+math.fabs(imu.gz) > 3*maxAngleVelocityDeg:
                         tempValidity = False
                         self.invalidReason = -2
                 

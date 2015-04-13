@@ -21,7 +21,7 @@ baudRate = 115200
 debugprinting = False 
 loopInterval = 0.08 # 10 Hz = 100ms (Adjusted down to keep up with arduino)
 enableLogging = True
-nSeconds = 10
+nSeconds = 15
 nLoops = nSeconds * 10
  
 class backEndThread(threading.Thread):
@@ -49,14 +49,14 @@ class backEndThread(threading.Thread):
                         for key,sonar in self.ss.sonars.iteritems():
                                 keystr = str(key)
                                 self.ssLogs[keystr] = open(pathString+key+".dat",'w')
-                                self.ssLogs[keystr].write("#Time(ms)\t Value \t Validity \t avgValue \t Diff \t Outliers \t invalidReason \n")
+                                self.ssLogs[keystr].write("#Time(ms)\t Value \t Validity \t avgValue \t Diff \t Outliers \t invalidReason\t SD \n")
 
                         self.ssLogs["pairs"] = open(pathString+"pairs.dat",'w') 
                         self.ssLogs["pairs"].write("#Time(ms)\t xPos \t yPos \t zPos \t xValid \t yValid \t zValid \t validreasons x-y-z \n")
 
                         #flight controller logs
                         self.fcLog = open(pathString+"fcLog.dat",'w')
-                        self.fcLog.write("#Time(ms)\t Roll \t Pitch \t Yaw \t xPos \t yPos \t zPos \t xVal \t yVal \t zVal \t State \t oRoll \t oPitch \t oYaw \t oThrottle \t spX \t spY \t spZ \n")
+                        self.fcLog.write("#Time(ms)\t  xPos \t yPos \t zPos \t xVal \t yVal \t zVal \t State \t oRoll \t oPitch \t oYaw \t oThrottle \t spX \t spY \t spZ \n")
 
                         #IMU logging
                         self.imuLog = open(pathString+"imuLog.dat",'w')
@@ -155,7 +155,7 @@ class backEndThread(threading.Thread):
                                 break
                         cur = self.ss.sonars[key]
                         #self.ssLogs[key].write("KLOLOOLOL \n")
-                        self.ssLogs[key].write("%i\t %.2f \t%i \t%.2f \t%.2f \t%i \t%s \n"%(timeMs,cur.value,cur.validity,cur.avgValue,math.fabs(cur.value-cur.avgValue),cur.nOutliers,cur.invalidReason))
+                        self.ssLogs[key].write("%i\t %.2f \t%i \t%.2f \t%.2f \t%i \t%s\t %.2f\t %.2f \n"%(timeMs,cur.value,cur.validity,cur.avgValue,math.fabs(cur.value-cur.avgValue),cur.nOutliers,cur.invalidReason,cur.sd,cur.lowpassed))
                         
                 #logs sonar pair values
                 x = self.ss.sonarPairs["x"]
@@ -167,7 +167,7 @@ class backEndThread(threading.Thread):
                 #log flight control values
                 fc = self.fc
                 pos = self.pos
-                self.fcLog.write("%i\t %.2f\t %.2f\t %.2f\t %.2f\t %.2f\t %.2f\t %i\t %i\t %i\t %s\t %i\t %i\t %i\t %i\t %.2f\t %.2f\t %.2f\n"%(timeMs,imu.roll,imu.pitch,imu.yaw,pos.x,pos.y,pos.z,pos.xValid,pos.yValid,pos.zValid,fc.state,fc.output["roll"],fc.output["pitch"],fc.output["yaw"],fc.output["throttle"],fc.setPoints["x"],fc.setPoints["y"],fc.setPoints["z"]))
+                self.fcLog.write("%i\t %.2f\t %.2f\t %.2f\t %i\t %i\t %i\t %s\t %i\t %i\t %i\t %i\t %.2f\t %.2f\t %.2f\n"%(timeMs,pos.x,pos.y,pos.z,pos.xValid,pos.yValid,pos.zValid,fc.state,fc.output["roll"],fc.output["pitch"],fc.output["yaw"],fc.output["throttle"],fc.setPoints["x"],fc.setPoints["y"],fc.setPoints["z"]))
 
                 #imulogging
                 self.imuLog.write("%i\t %.2f\t %.2f\t %.2f\t %.2f\t %.2f\t %.2f\n"%(timeMs,imu.roll,imu.pitch,imu.yaw,imu.gx,imu.gy,imu.gz))

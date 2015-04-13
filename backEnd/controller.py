@@ -6,7 +6,7 @@ midOutput = 1500 #1500 ms pwm output is analog stick center
 maxOutput = 2000
 minOutput = 1000
 
-pidDefKp = 1
+pidDefKp = 2
 pidDefKi = 0
 pidDefKd = 0
 
@@ -75,7 +75,8 @@ class fControl:
                         if pos.xValid:
                                 self.xPid.set(self.setPoints["x"])
                                 self.xPid.step(pidDt,pos.x)
-                                self.output["pitch"] = midOutput + self.xPid.get()
+                                self.output["pitch"] = midOutput - self.xPid.get()
+                                #negative because low elevator is forward
                         else:
                                 self.output["pitch"] = midOutput
 
@@ -97,6 +98,6 @@ class fControl:
                 elif self.state == "moveLeft":
                         self.output["roll"] = midOutput - self.speeds["roll"]
                 elif self.state == "moveForward":
-                        self.output["pitch"] = midOutput + self.speeds["pitch"]
-                elif self.state == "moveBackward":
                         self.output["pitch"] = midOutput - self.speeds["pitch"]
+                elif self.state == "moveBackward":
+                        self.output["pitch"] = midOutput + self.speeds["pitch"]
