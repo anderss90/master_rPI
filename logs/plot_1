@@ -1,0 +1,59 @@
+#Parameters
+height=0.25
+width=1
+angle_range=30
+position_range=60
+#Global
+set term png enhanced size 1280,1024
+set output "log.png"
+#unset key
+set multiplot
+set size 1,0.25
+
+# y(t)Pitch         
+set origin 0, 3*height
+#set title "Pitch"
+
+#set title "Attitude"
+set xlabel "t (ms)"
+set ylabel "Angle (Euler angles)"
+set grid
+set yrange [-angle_range:angle_range]
+set title "Attitude"
+plot "log.dat" using 1:(57.29*$2) title "Pitch" with linespoints, \
+     "log.dat" using 1:(57.29*$3) title 'Roll' with points, \
+     "log.dat" using 1:(57.29*$4) title 'Yaw' with lines
+#set key 0.0,0.0
+#set autoscale
+set origin 0, 2*height
+#set title "Position estimates based on sonar readings"
+set title "X-position"
+set ylabel "Position (cm)"
+set xlabel "t (ms)"
+set grid
+set yrange [-position_range:position_range]
+plot "log.dat" using 1:5 title "X" with lines
+#
+unset title
+## u(t) Roll           
+set origin 0, height
+#set title "Roll"
+set title "Y-position" 
+set ylabel "Position (cm)"
+set xlabel "t (ms) "
+set grid
+set yrange [-position_range:position_range]
+plot "log.dat" using 1:6 title "Y" with lines
+#
+## u(t) Yaw   
+set origin 0, 0
+#set title "Yaw"
+set xlabel "t (ms)"
+set ylabel "Position (cm)"
+set title "Z-position"
+set grid
+set yrange [-position_range:position_range]
+plot "log.dat" using 1:7 title "Z" with lines
+# u(t) Attitude
+
+unset multiplot

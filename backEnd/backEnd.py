@@ -10,7 +10,7 @@ from imu import imu
 from sonarSys import sonarSys
 import upstream
 import downstream
-from controller import fControl
+from posController import fControl
 from position import position
 from uartHandler import uartHandler
 serialPort = "/dev/ttyUSB0"
@@ -23,7 +23,7 @@ loopInterval = 0.08 # 10 Hz = 100ms (Adjusted down to keep up with arduino)
 enableLogging = True
 nSeconds = 15
 nLoops = nSeconds * 10
- 
+
 class backEndThread(threading.Thread):
         def __init__(self,threadID):
                 print "backEndThread init"
@@ -167,6 +167,8 @@ class backEndThread(threading.Thread):
                 #log flight control values
                 fc = self.fc
                 pos = self.pos
+                # DEBUG
+                fc.state = 0
                 self.fcLog.write("%i\t %.2f\t %.2f\t %.2f\t %i\t %i\t %i\t %s\t %i\t %i\t %i\t %i\t %.2f\t %.2f\t %.2f\n"%(timeMs,pos.x,pos.y,pos.z,pos.xValid,pos.yValid,pos.zValid,fc.state,fc.output["roll"],fc.output["pitch"],fc.output["yaw"],fc.output["throttle"],fc.setPoints["x"],fc.setPoints["y"],fc.setPoints["z"]))
 
                 #imulogging

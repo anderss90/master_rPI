@@ -1,18 +1,35 @@
-<!DOCTYPE html>
 <html>
         <head>
-                <title>Test Page </title>
-                <meta http-equiv="refresh" content="60" >
-        </head>
-        <body>
-                <form action="buttons/moveDown" method="post"><input type="submit" value="Down"></form>
-                <form action="buttons/moveup" method="post"><input type="submit" value="Up"></form>
-                <form action="buttons/moveRight" method="post"><input type="submit" value="Right"></form>
-                <form action="buttons/moveLeft" method="post"><input type="submit" value="Left"></form>
-                <form action="buttons/moveForward" method="post"><input type="submit" value="Forward"></form>
-                <form action="buttons/moveBackward" method="post"><input type="submit" value="Backward"></form>
-                <form action="buttons/hover" method="post"><input type="submit" value="Hover"></form>
-        </body>
-</html>
-
-
+                <title>My Vivotek IP Camera Video Embed</title>
+                <body>
+                        <h2>My Vivotek IP Camera Video Embed</h2>
+                        <p>
+                        <center>
+                                <script language="JavaScript">
+                                        var host="129.241.154.152"; // Change to your IP camera’s IP address or host name
+                                        var port="5001"; // Change to the port of your IP camera
+                                        var width="320"; // adjust the width of the image
+                                        var height="240"; // adjust the height of the image
+                                        if ((navigator.appName == "Microsoft Internet Explorer")&&(navigator.platform != "MacPPC"))
+                                        {
+                                                document.write("<OBJECT ID=\"RtspVapgCtrl\" WIDTH=" + width + " HEIGHT=" + height + "
+                                                        name=\"RtspVapgCtrl\"");
+                                                        document.write(" CLASSID=CLSID:45830FF9-D9E6-4f41-86ED-B266933D8E90");
+                                                        document.write(" CODEBASE=\"http://" + host + ":" + port + "/RtspVaPgDec.cab\">");
+                                                        document.write("<PARAM NAME=\"VSize\" VALUE=\"SIF\">");
+                                                        document.write("<PARAM NAME=\"Language\" VALUE=\"EN\">");
+                                                        document.write("<PARAM NAME=\"ClickEventHandler\" VALUE=\"3\">");
+                                                        document.write("<PARAM NAME=\"Url\" VALUE=\"http://" + host + ":" + port + "/cgibin/control.cgi\">");
+                                                        document.write("<PARAM NAME=\"ViewStream\" VALUE=\"0\">");
+                                                        document.write("</OBJECT>");
+                                        }
+                                        else
+                                        {
+                                                document.write("<img src = \"http://" + host + ":" + port + "/video.mjpg\" height=" + height + " width="
+                                                + width + ">");
+                                        }
+                                </script>
+                        </center>
+                        </p>
+                </body>
+        </html>

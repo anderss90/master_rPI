@@ -42,6 +42,9 @@ class sonar:
                 if value < 0:
                         self.value = -1
                         return
+                if value > maxValueCm:
+                        self.value = maxValueCm+1
+                        return
                 diff = math.fabs(value-self.value)
                 if  diff > outlierLimit: #is outlier
                         if  self.nOutliers < maxOutlierNumber:

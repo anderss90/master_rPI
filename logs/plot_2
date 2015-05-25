@@ -1,0 +1,73 @@
+#Parameters
+height=0.16
+width=1
+angle_range=20
+position_range=100
+dist_range=100
+val_coeff=10
+#Global
+set term png enhanced size 1400,2000
+set output "sonar_plot.png"
+#unset key
+set multiplot
+set size 1,height
+n=1
+set origin 0, height*5
+set xlabel "t (ms)"
+set title "Distance FRONT"
+set yrange[0:dist_range]
+set ylabel "distance (cm)"
+plot "sonar_log.dat" u 1:2 t "distance" w lines, \
+     "sonar_log.dat" u 1:($3*val_coeff) t "validity" w boxes
+
+n=2
+set origin 0, height*(6-n)
+set xlabel "t (ms)"
+set ylabel "distance (cm)"
+set title "Distance BACK"
+set yrange[0:dist_range]
+plot "sonar_log.dat" u 1:4 t "distance" w lines, \
+     "sonar_log.dat" u 1:($5*val_coeff) t "validity" w boxes
+n=3
+set origin 0, height*(6-n)
+set xlabel "t (ms)"
+set ylabel "distance (cm)"
+set title "Distance RIGHT"
+set yrange[0:dist_range]
+plot "sonar_log.dat" u 1:6 t "distance" w lines, \
+     "sonar_log.dat" u 1:($7*val_coeff) t "validity" w boxes
+n=4
+set origin 0, height*(6-n)
+set xlabel "t (ms)"
+set ylabel "distance (cm)"
+set title "Distance LEFT"
+set yrange[0:dist_range]
+plot "sonar_log.dat" u 1:8 t "distance" w lines, \
+     "sonar_log.dat" u 1:($9*val_coeff) t "validity" w boxes
+
+n=5
+set origin 0, height*(6-n)
+set xlabel "t (ms)"
+set ylabel "distance (cm)"
+set title "Distance DOWN"
+set yrange[0:dist_range]
+plot "sonar_log.dat" u 1:10 t "distance" w lines, \
+     "sonar_log.dat" u 1:($11*val_coeff) t "validity" w boxes
+
+n=6
+set origin 0, height*(6-n)
+set xlabel "t (ms)"
+set ylabel "distance (cm)"
+set title "Distance UP"
+set yrange[0:dist_range]
+plot "sonar_log.dat" u 1:12 t "distance" w lines, \
+     "sonar_log.dat" u 1:($13*val_coeff) t "validity" w boxes
+
+
+
+
+
+
+
+unset multiplot
+

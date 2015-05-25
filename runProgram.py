@@ -6,6 +6,6 @@ from serverThread import flaskServerThread
 flaskServerThread = flaskServerThread()
 backendthread = backEnd.backEnd.backEndThread(1)
 
-backendthread.start()
+#backendthread.start()
 flaskServerThread.start()
 
